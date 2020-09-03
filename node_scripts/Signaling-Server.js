@@ -986,7 +986,7 @@ module.exports = exports = function (socket, config) {
             console.log("disconnection message: ", message);
 
             // ref. docs: https://socket.io/docs/server-api/#Event-%E2%80%98disconnecting%E2%80%99
-            if (message != 'client namespace disconnect') {
+            if (message != 'ping timeout') {
                 // only disconnect when the client has explicitly sent a disconnection signal
                 try {
                     if (socket && socket.namespace && socket.namespace.sockets) {
