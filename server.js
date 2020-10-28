@@ -101,7 +101,11 @@ httpApp = httpApp.listen(process.env.PORT || PORT, process.env.IP || "0.0.0.0", 
 // --------------------------
 // socket.io codes goes below
 
-ioServer(httpApp).on('connection', function(socket) {
+ioServer(httpApp, {
+    pingInterval: 5 * 60 * 1000, // 10 mins
+    pingTimeout: 1 * 60 * 60 * 1000, // 1 hour
+    allowUpgrades: false
+}).on('connection', function(socket) {
     RTCMultiConnectionServer.addSocket(socket, config);
 
     // ----------------------
