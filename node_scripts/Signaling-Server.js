@@ -976,18 +976,18 @@ module.exports = exports = function (socket, config) {
 
         socket.on('disconnect', function (reason) {
 
-            if (reason === 'server namespace disconnect' || reason === 'client namespace disconnect') {
-
-                try {
-                    if (socket && socket.namespace && socket.namespace.sockets) {
-                        delete socket.namespace.sockets[this.id];
-                    }
-                } catch (e) {
-                    pushLogs(config, 'disconnect', e);
+            // remove the socket from the namespace
+            try {
+                if (socket && socket.namespace && socket.namespace.sockets) {
+                    delete socket.namespace.sockets[this.id];
                 }
+            } catch (e) {
+                pushLogs(config, 'disconnect', e);
+            }
 
+            if (reason === 'server namespace disconnect' || reason === 'client namespace disconnect') {
                 try {
-                    // inform all connected users
+                    // only inform all connected users, if gracefully connected
                     if (listOfUsers[socket.userid]) {
                         for (var s in listOfUsers[socket.userid].connectedWith) {
                             listOfUsers[socket.userid].connectedWith[s].emit('user-disconnected', socket.userid);
@@ -1002,22 +1002,6 @@ module.exports = exports = function (socket, config) {
                 } catch (e) {
                     pushLogs(config, 'disconnect', e);
                 }
-
-                closeOrShiftRoom();
-
-                delete listOfUsers[socket.userid];
-
-                if (socket.ondisconnect) {
-                    try {
-                        // scalable-broadcast.js
-                        socket.ondisconnect();
-                    }
-                    catch (e) {
-                        pushLogs('socket.ondisconnect', e);
-                    }
-                }
-
-                sendToAdmin();
             } else {
                 try {
                     // inform all connected users or connection-error
@@ -1035,8 +1019,23 @@ module.exports = exports = function (socket, config) {
                 } catch (e) {
                     pushLogs(config, 'disconnect', e);
                 }
-
             }
+
+            closeOrShiftRoom();
+
+            delete listOfUsers[socket.userid];
+
+            if (socket.ondisconnect) {
+                try {
+                    // scalable-broadcast.js
+                    socket.ondisconnect();
+                }
+                catch (e) {
+                    pushLogs('socket.ondisconnect', e);
+                }
+            }
+
+            sendToAdmin();
         });
     }
 };
